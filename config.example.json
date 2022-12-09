@@ -1,0 +1,77 @@
+{
+  "SPLoginInfo": {
+    "Client_Id": "",
+    "Client_Password": "",
+    "Tenant_Id": ""
+  },
+  "UserLoginInfo": {
+    "Tenant_Id": ""
+  },
+  "BillingAPIUrls": {
+    "GetBillingAccounts": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}?api-version=2020-05-01",
+    "GetBillingRoleAssignmentsByBillingAccount": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/billingRoleAssignments?api-version=2019-10-01-preview",
+    "GetBillingRoleAssignmentsByDepartment": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/departments/{departmentName}/billingRoleAssignments?api-version=2019-10-01-preview",
+    "GetBillingRoleAssignmentsByEnrollmentAccount": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/enrollmentAccounts/{enrollmentAccountName}/billingRoleAssignments?api-version=2019-10-01-preview"
+  },
+  "CheckRoles": {
+    "Enterprise": {
+      "BillingAccountName": ""
+    },
+    "Department": {
+      "BillingAccountName": "",
+      "DepartmentName": ""
+    },
+    "Account": {
+      "BillingAccountName": "",
+      "AccountName": ""
+    }
+  },
+  "AssignRoles": {
+    "9f1983cb-2574-400c-87e9-34cf8e2280db": [
+      "9f1983cb-2574-400c-87e9-34cf8e2280db",
+      "24f8edb6-1668-4659-b5e2-40bb5f3a7d7e",
+      "da6647fb-7651-49ee-be91-c43c4877f0c4",
+      "fb2cf67f-be5b-42e7-8025-4683c668f840",
+      "db609904-a47f-4794-9be8-9bd86fbffd8a",
+      "c15c22c0-9faf-424c-9b7e-bd91c06a240b"
+    ],
+    "fb2cf67f-be5b-42e7-8025-4683c668f840": [
+      "fb2cf67f-be5b-42e7-8025-4683c668f840",
+      "db609904-a47f-4794-9be8-9bd86fbffd8a",
+      "c15c22c0-9faf-424c-9b7e-bd91c06a240b"
+    ],
+    "c15c22c0-9faf-424c-9b7e-bd91c06a240b": [
+      "a0bcee42-bf30-4d1b-926a-48d21664ef71"
+    ]
+  },
+  "RoleMappings": {
+    "9f1983cb-2574-400c-87e9-34cf8e2280db": {
+      "name": "Enrollment Administrator",
+      "CanAssignToSPN": false
+    },
+    "24f8edb6-1668-4659-b5e2-40bb5f3a7d7e": {
+      "name": "Enrollment Reader",
+      "CanAssignToSPN": true
+    },
+    "fb2cf67f-be5b-42e7-8025-4683c668f840": {
+      "name": "Department Administrator",
+      "CanAssignToSPN": false
+    },
+    "db609904-a47f-4794-9be8-9bd86fbffd8a": {
+      "name": "Department Reader",
+      "CanAssignToSPN": true
+    },
+    "da6647fb-7651-49ee-be91-c43c4877f0c4": {
+      "name": "EA Purchaser",
+      "CanAssignToSPN": true
+    },
+    "c15c22c0-9faf-424c-9b7e-bd91c06a240b": {
+      "name": "Enrollment Account Owner",
+      "CanAssignToSPN": false
+    },
+    "a0bcee42-bf30-4d1b-926a-48d21664ef71": {
+      "name": "Subscription Creator",
+      "CanAssignToSPN": true
+    }
+  }
+}
