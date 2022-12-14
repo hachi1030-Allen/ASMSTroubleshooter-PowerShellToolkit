@@ -18,6 +18,21 @@ function Create-Menu {
   while(!$EnterPressed) {
       # draw the menu without Clear-Host to prevent flicker
       [console]::SetCursorPosition(0,0)
+        #   # Allen modified to add user information.
+        # Not working, maybe try these later when have time.
+        #   if ($null -ne $global:loginInfo){
+        #     $accountDisplay = "Signed Account: $($global:loginInfo.user.name)"
+        #     $tenantDisplay = "Tenant: $($global:loginInfo.tenantId)"
+        #     [int]$Width = [math]::Max($MenuTitle.Length, ($MenuOptions | Measure-Object -Property Length -Maximum).Maximum)
+        #     [int]$displayMaxWidth = [math]::Max($accountDisplay.Length, $tenantDisplay.Length)
+        #     $leftSpace  = ' ' * [Math]::Floor(($maxwidth - $displayMaxWidth.Length)/2)
+        #     $rightSpace = ' ' * [Math]::Ceiling(($maxwidth - $displayMaxWidth.Length)/2)
+        #     Write-Host ("║" + $leftSpace + $accountDisplay + $rightSpace + "║")
+        #     Write-Host ("║" + $leftSpace + $tenantDisplay + $rightSpace + "║")
+        #     Write-Host ("╟" + "─" * $maxwidth + "╢")
+        #   } else {
+            
+        #   }
       for ($i = 0; $i -le $MaxValue; $i++){
           [int]$Width = [math]::Max($MenuTitle.Length, ($MenuOptions | Measure-Object -Property Length -Maximum).Maximum)
           [int]$Buffer = if (($Width * 1.5) -gt 78) { (78 - $width) / 2 } else { $width / 4 }
@@ -31,6 +46,7 @@ function Create-Menu {
               Write-Host ("║" + $leftSpace + $MenuTitle + $rightSpace + "║")
               Write-Host ("╟" + "─" * $maxwidth + "╢")
           }
+
           # write the menu option lines
           for($i = 0; $i -lt $MenuOptions.Count; $i++){
               $Item = "$($i + 1). "
@@ -46,6 +62,11 @@ function Create-Menu {
               }
           }
           Write-Host ("╚" + "═" * $maxwidth + "╝")
+      }
+      # Allen - Test to write the sign in information here.
+      if ($null -ne $global:loginInfo) {
+        Write-Info "Signed-in Account: $($global:loginInfo.user.name)"
+        Write-Info "TenantId: $($global:loginInfo.tenantId)"
       }
       # wait for an accepted key press
       do {
@@ -136,7 +157,7 @@ function Write-Error {
 
 function Get-IsValidEmail {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, Position=0)]
         [string]
         $Email
     )
@@ -144,10 +165,54 @@ function Get-IsValidEmail {
     Try
     {
         $obj = New-Object System.Net.Mail.MailAddress($Email)
-        return $($obj -ne $null)
+        return $($null -ne $obj)
     }
     Catch
     {
         return $false
     }
 }
+
+function Test-IsGuid
+{
+    [OutputType([bool])]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$StringGuid
+    )
+ 
+   $ObjectGuid = [System.Guid]::empty
+   return [System.Guid]::TryParse($StringGuid,[System.Management.Automation.PSReference]$ObjectGuid) # Returns True if successfully parsed
+}
+
+function Get-UserInput {
+    param (
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Prompt
+    )
+
+    return Read-Host $Prompt
+}
+
+
+# function New-DataTable {
+#     param(
+#         [Parameter(Mandatory=$true)]
+#         [string[]]
+#         $Headers,
+#         [Parameter(Mandatory=$true)]
+#         [PSObject]
+#         $DataObject
+#     )
+
+#     $DataTable = New-Object System.Data.DataTable
+
+#     $Headers | ForEach-Object {
+#         $DataTable.Columns.Add($_)
+#     }
+
+#     foreach ($currentItemName in $DataObject) {
+#         <# $currentItemName is the current item #>
+#     }
+# }
