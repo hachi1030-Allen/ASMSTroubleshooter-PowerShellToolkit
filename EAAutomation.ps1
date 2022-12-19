@@ -320,25 +320,21 @@ function Get-DeleteRoleMenu {
   $menu = Create-Menu -MenuTitle "Choose the level of the role to be deleted" -MenuOptions "Enrollment", "Department", "Enrollment Account", "Back", "Quit"
   switch ($menu) {
     0 {
-      # $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Administrator"}).name
-      # $userEmail = Get-UserInput "Please input user email address for role assignment"
-      # $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       $scope = "Enrollment"
       $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
-      if (Test-IsGuid $principalInput) {
+      if ($true -eq $(Test-IsGuid $principalInput)) {
         $isSPN = $true
       } else {
         $isSPN = $false
       }
       Delete-Role -Scope $scope -Principal $principalInput -IsSPN $isSPN
-      # Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail
       cmd /c pause
       Get-EAAdminMenu
     }
     1 {
       $scope = "Department"
       $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
-      if (Test-IsGuid $principalInput) {
+      if ($true -eq $(Test-IsGuid $principalInput)) {
         $isSPN = $true
       } else {
         $isSPN = $false
@@ -350,7 +346,7 @@ function Get-DeleteRoleMenu {
     2 {
       $scope = "EnrollmentAccount"
       $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
-      if (Test-IsGuid $principalInput) {
+      if ($true -eq $(Test-IsGuid $principalInput)) {
         $isSPN = $true
       } else {
         $isSPN = $false
@@ -497,13 +493,11 @@ function Assign-Role {
     if ($_.Exception.Response.StatusCode -eq 403) {
       Write-Warning "This token you provided does not have the priviledge to assign the role. Try logging in with another account or switch to correct tenant."
       Read-Host "Press any key to go back"
-      # Get-UserFunctionMenu
       Get-EAAdminMenu
       return
     } else {
       Write-Error "Something wrong happened, error: $($_.ErrorDetails.Message)."
       Read-Host "Press any key to go back"
-      # Get-UserFunctionMenu
       Get-EAAdminMenu
       return
     }
@@ -526,7 +520,7 @@ function Delete-Role {
     [Parameter(Mandatory=$true)]
     [string]$Principal,
     [Parameter(Mandatory=$true)]
-    [switch]$IsSPN,
+    [bool]$IsSPN,
     [Parameter(Mandatory=$false)]
     [string]$RoleAssignmentName
   )
