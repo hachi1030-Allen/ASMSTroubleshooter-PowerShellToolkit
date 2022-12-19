@@ -195,6 +195,25 @@ function Get-UserInput {
     return Read-Host $Prompt
 }
 
+function Choose-YesOrNo {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Title,
+        [Parameter(Mandatory=$true)]
+        [string]$Message
+    )
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&YES", "Proceed"
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&NO", "Abandon"
+  
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
+  
+    $result = $host.UI.PromptForChoice($title, $message, $options, 1)
+    switch ($result) {
+      0 { return "YES" }
+      1 { return "NO" }
+    }
+  }
+
 
 # function New-DataTable {
 #     param(

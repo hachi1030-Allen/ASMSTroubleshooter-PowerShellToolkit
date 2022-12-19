@@ -60,7 +60,7 @@ function Get-AzureADMenu {
 }
 
 function Get-EAAdminMenu {
-  $menu = Create-Menu -MenuTitle "EA Admin Operations" -MenuOptions "Assign Roles - to user", "Assign Roles - to SPN", "Check Roles", "Export Roles", "Back", "Quit"
+  $menu = Create-Menu -MenuTitle "EA Admin Operations" -MenuOptions "Assign Roles - to user", "Assign Roles - to SPN", "Check Roles", "Export Roles", "Delete Roles", "Back", "Quit"
   switch ($menu) {
     0 {
       # Write-Warning "It's strongly recommended to sign in with Enterprise Administrator Role to do the role assignments."
@@ -81,9 +81,12 @@ function Get-EAAdminMenu {
       Get-EAExportRolesMenu
     }
     4 {
-      Get-UserFunctionMenu
+      Get-DeleteRoleMenu
     }
     5 {
+      Get-UserFunctionMenu
+    }
+    6 {
       Exit
     }
   }
@@ -181,19 +184,19 @@ function Get-EAExportRolesMenu {
     0 {
       $scope = "Enrollment"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope $scope
-      $exportFileName = "ExportRoles-$($global:configuration.CheckOrAssignRoles.BillingAccountName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
+      $exportFileName = "ExportRoles-$($global:configuration.RoleOperationScope.BillingAccountName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
       break
     }
     1 {
       $scope = "Department"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope $scope
-      $exportFileName = "ExportRoles-$($global:configuration.CheckOrAssignRoles.BillingAccountName)-$($global:configuration.CheckOrAssignRoles.DepartmentName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
+      $exportFileName = "ExportRoles-$($global:configuration.RoleOperationScope.BillingAccountName)-$($global:configuration.RoleOperationScope.DepartmentName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
       break
     }
     2 {
       $scope = "EnrollmentAccount"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope $scope
-      $exportFileName = "ExportRoles-$($global:configuration.CheckOrAssignRoles.BillingAccountName)-$($global:configuration.CheckOrAssignRoles.EnrollmentAccountName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
+      $exportFileName = "ExportRoles-$($global:configuration.RoleOperationScope.BillingAccountName)-$($global:configuration.RoleOperationScope.EnrollmentAccountName)-$scope-$($(Get-Date).ToString("yyyyMMdd")).csv"
       break
     }
     3 {
@@ -246,7 +249,7 @@ function Get-AssignUserRoleMenu {
     0 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Administrator"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail
       cmd /c pause
       Get-EAAdminMenu
@@ -254,7 +257,7 @@ function Get-AssignUserRoleMenu {
     1 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Reader"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail
       cmd /c pause
       Get-EAAdminMenu
@@ -262,7 +265,7 @@ function Get-AssignUserRoleMenu {
     2 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "EA Purchaser"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail
       cmd /c pause
       Get-EAAdminMenu
@@ -270,8 +273,8 @@ function Get-AssignUserRoleMenu {
     3 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Department Administrator"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $departmentName = $global:configuration.CheckOrAssignRoles.DepartmentName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $departmentName = $global:configuration.RoleOperationScope.DepartmentName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail -DepartmentName $departmentName
       cmd /c pause
       Get-EAAdminMenu
@@ -279,8 +282,8 @@ function Get-AssignUserRoleMenu {
     4 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Department Reader"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $departmentName = $global:configuration.CheckOrAssignRoles.DepartmentName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $departmentName = $global:configuration.RoleOperationScope.DepartmentName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail -DepartmentName $departmentName
       cmd /c pause
       Get-EAAdminMenu
@@ -288,8 +291,8 @@ function Get-AssignUserRoleMenu {
     5 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Account Owner"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $enrollmentAccountName = $global:configuration.CheckOrAssignRoles.EnrollmentAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $enrollmentAccountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail -EnrollmentAccountName $enrollmentAccountName
       cmd /c pause
       Get-EAAdminMenu
@@ -298,8 +301,8 @@ function Get-AssignUserRoleMenu {
       Write-Warning "Please note that only Enrollment Account Owner role can assign Subscription Creator based on the enrollment account."
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Subscription Creator"}).name
       $userEmail = Get-UserInput "Please input user email address for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $enrollmentAccountName = $global:configuration.CheckOrAssignRoles.EnrollmentAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $enrollmentAccountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail -EnrollmentAccountName $enrollmentAccountName
       cmd /c pause
       Get-EAAdminMenu
@@ -313,6 +316,58 @@ function Get-AssignUserRoleMenu {
   }
 }
 
+function Get-DeleteRoleMenu {
+  $menu = Create-Menu -MenuTitle "Choose the level of the role to be deleted" -MenuOptions "Enrollment", "Department", "Enrollment Account", "Back", "Quit"
+  switch ($menu) {
+    0 {
+      # $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Administrator"}).name
+      # $userEmail = Get-UserInput "Please input user email address for role assignment"
+      # $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $scope = "Enrollment"
+      $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
+      if (Test-IsGuid $principalInput) {
+        $isSPN = $true
+      } else {
+        $isSPN = $false
+      }
+      Delete-Role -Scope $scope -Principal $principalInput -IsSPN $isSPN
+      # Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -UserEmail $userEmail
+      cmd /c pause
+      Get-EAAdminMenu
+    }
+    1 {
+      $scope = "Department"
+      $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
+      if (Test-IsGuid $principalInput) {
+        $isSPN = $true
+      } else {
+        $isSPN = $false
+      }
+      Delete-Role -Scope $scope -Principal $principalInput -IsSPN $isSPN
+      cmd /c pause
+      Get-EAAdminMenu
+    }
+    2 {
+      $scope = "EnrollmentAccount"
+      $principalInput = Get-UserInput "Please input the user email or service principal whose role will be deleted at $scope level"
+      if (Test-IsGuid $principalInput) {
+        $isSPN = $true
+      } else {
+        $isSPN = $false
+      }
+      Delete-Role -Scope $scope -Principal $principalInput -IsSPN $isSPN
+      cmd /c pause
+      Get-EAAdminMenu
+    }
+    3 {
+      Get-EAAdminMenu
+    }
+    4 {
+      Exit
+    }
+  }
+}
+
 function Get-AssignSPNRoleMenu {
   $menu = Create-Menu -MenuTitle "Choose the role to be assigned" -MenuOptions "Enrollment Reader", "EA Purchaser", "Department Reader", "Subscription Creator", "Back", "Quit"
 
@@ -320,7 +375,7 @@ function Get-AssignSPNRoleMenu {
     0 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Enrollment Reader"}).name
       $spnPrincipalId = Get-UserInput "Please input the service principal object id for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -PrincipalId $spnPrincipalId
       cmd /c pause
       Get-EAAdminMenu
@@ -328,7 +383,7 @@ function Get-AssignSPNRoleMenu {
     1 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "EA Purchaser"}).name
       $spnPrincipalId = Get-UserInput "Please input the service principal object id for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -PrincipalId $spnPrincipalId
       cmd /c pause
       Get-EAAdminMenu
@@ -336,8 +391,8 @@ function Get-AssignSPNRoleMenu {
     2 {
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Department Reader"}).name
       $spnPrincipalId = Get-UserInput "Please input the service principal object id for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $departmentName = $global:configuration.CheckOrAssignRoles.DepartmentName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $departmentName = $global:configuration.RoleOperationScope.DepartmentName
       Assign-Role -BillingAccountName $billingAccountName -DepartmentName $departmentName -RoleDefinitionId $roleDefinitionId -PrincipalId $spnPrincipalId
       cmd /c pause
       Get-EAAdminMenu
@@ -346,8 +401,8 @@ function Get-AssignSPNRoleMenu {
       Write-Warning "Please note that only Enrollment Account Owner role can assign Subscription Creator based on the enrollment account."
       $roleDefinitionId = $($global:configuration.RoleMappings.PSObject.Properties.GetEnumerator() | Where-Object {$_.Value.name -eq "Subscription Creator"}).name
       $spnPrincipalId = Get-UserInput "Please input the service principal object id for role assignment"
-      $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-      $enrollmentAccountName = $global:configuration.CheckOrAssignRoles.EnrollmentAccountName
+      $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+      $enrollmentAccountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
       Assign-Role -BillingAccountName $billingAccountName -RoleDefinitionId $roleDefinitionId -PrincipalId $spnPrincipalId -EnrollmentAccountName $enrollmentAccountName
       cmd /c pause
       Get-EAAdminMenu
@@ -463,6 +518,110 @@ function Assign-Role {
   }
 }
 
+function Delete-Role {
+  param(
+    [Parameter(Mandatory=$true)]
+    [ValidateSet('Enrollment', 'Department', 'EnrollmentAccount')]
+    [string]$Scope,
+    [Parameter(Mandatory=$true)]
+    [string]$Principal,
+    [Parameter(Mandatory=$true)]
+    [switch]$IsSPN,
+    [Parameter(Mandatory=$false)]
+    [string]$RoleAssignmentName
+  )
+
+  $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+
+  switch ($Scope) {
+    "Enrollment" {
+      $endpoint = $global:configuration.BillingAPIUrls.AssignBillingAccountLevelRoles.Replace("{billingAccountName}", $billingAccountName)
+      break
+    }
+    "Department" {
+      $departmentName = $global:configuration.RoleOperationScope.DepartmentName
+      $endpoint = $global:configuration.BillingAPIUrls.AssignDepartmentLevelRoles.Replace("{billingAccountName}", $billingAccountName).Replace("{departmentName}", $departmentName)
+      break
+    }
+    "EnrollmentAccount" {
+      $enrollmentAccountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
+      $endpoint = $global:configuration.BillingAPIUrls.AssignEnrollmentAccountLevelRoles.Replace("{billingAccountName}", $billingAccountName).Replace("{enrollmentAccountName}", $enrollmentAccountName)
+      break
+    }
+  }
+
+  # if ([string]::IsNullOrEmpty($RoleAssignmentName)) {
+    # Need to get the role assignment name
+  $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope $Scope
+  if ($null -ne $roleAssignmentsResponse) {
+    # $RoleAssignmentName = $roleAssignmentsResponse.name
+    $roleAssignments = $roleAssignmentsResponse.Content | ConvertFrom-Json
+
+    if (-not $IsSPN) {
+      Write-Warning "Checking user $Principal under $Scope level permission."
+      $assignedRole = $roleAssignments.value | Where-Object { $_.properties.userEmailAddress -eq $Principal }
+    } else {
+      Write-Warning "Checking service principal $Principal under $Scope level permission."
+      $assignedRole = $roleAssignments.value | Where-Object { $_.properties.principalId -eq $Principal }
+    }
+
+    if ($null -ne $assignedRole) {
+      $RoleAssignmentName = $assignedRole.name
+      $RoleName = Get-RoleNameFromRoleDefinitionId $assignedRole.properties.RoleDefinitionId
+    } else {
+      Write-Error "$Principal doesn't have any role at $Scope level."
+      return
+    }
+  }
+  # }
+
+  # Starting to delete role.
+  $endpoint = $endpoint.Replace("{billingRoleAssignmentName}", $RoleAssignmentName)
+
+  $proceed = Choose-YesOrNo -Title "Delete Role" -Message "Are you sure you want to delete $RoleName for $Principal at $Scope level?"
+
+  if ($proceed -eq "YES") {
+    Write-Warning "Deleting $RoleName for $Principal under $Scope level"
+    try {
+      $token = $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
+      $response = Invoke-WebRequest -Uri $endpoint -Method "Delete" -Headers @{Authorization="Bearer $token"}
+    }
+    catch {
+      if ($_.Exception.Response.StatusCode -eq 403) {
+        Write-Warning "This token you provided does not have the priviledge to assign the role. Try logging in with another account or switch to correct tenant."
+        Read-Host "Press any key to go back"
+        # Get-UserFunctionMenu
+        Get-EAAdminMenu
+        return
+      } else {
+        Write-Error "Something wrong happened, error: $($_.ErrorDetails.Message)."
+        Read-Host "Press any key to go back"
+        # Get-UserFunctionMenu
+        Get-EAAdminMenu
+        return
+      }
+    }
+
+    $result = $response | ConvertFrom-Json
+    if ($result.StatusCode -lt 299) {
+      Write-Success "Successfully deleted role: $RoleName to Principal: $Principal"
+    }
+  } else {
+    Write-Warning "Operation cancelled."
+  }
+}
+
+function Get-RoleNameFromRoleDefinitionId {
+  param(
+    [Parameter(Mandatory=$true, Position = 0)]
+    [string]$RoleDefinitionId
+  )
+
+  $roleId = $RoleDefinitionId.Split("/")[-1]
+
+  return $global:configuration.RoleMappings.$roleId.name
+}
+
 function Choose-UserAuthenticationType {
   $organization = New-Object System.Management.Automation.Host.ChoiceDescription "&Organization", "User Authentication Type: Organization"
   $msa = New-Object System.Management.Automation.Host.ChoiceDescription "&MSA", "User Authentication Type: MSA"
@@ -526,7 +685,7 @@ function Generate-RoleAssignmentsCsv {
 #     [string]
 #     $Principal
 #   )
-#   $enterpriseAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
 #   # Get the response for all the billing account level role assignments first.
 #   try {
 #     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByBillingAccount.Replace("{billingAccountName}", $enterpriseAccountName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
@@ -603,8 +762,8 @@ function Generate-RoleAssignmentsCsv {
 #     [string]
 #     $Principal
 #   )
-#   $enterpriseAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-#   $departmentName = $global:configuration.CheckOrAssignRoles.DepartmentName
+#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+#   $departmentName = $global:configuration.RoleOperationScope.DepartmentName
 #   # Get the response for all the billing account level role assignments first.
 #   try {
 #     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByDepartment.Replace("{billingAccountName}", $enterpriseAccountName).Replace("{departmentName}", $departmentName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
@@ -677,8 +836,8 @@ function Generate-RoleAssignmentsCsv {
 #     [string]
 #     $Principal
 #   )
-#   $enterpriseAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
-#   $accountName = $global:configuration.CheckOrAssignRoles.EnrollmentAccountName
+#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
+#   $accountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
 #   # Get the response for all the billing account level role assignments first.
 #   try {
 #     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByEnrollmentAccount.Replace("{billingAccountName}", $enterpriseAccountName).Replace("{enrollmentAccountName}", $accountName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
@@ -755,18 +914,18 @@ function Get-BillingRoleAssignmentsResponse {
 
   $AccessToken = $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
 
-  $billingAccountName = $global:configuration.CheckOrAssignRoles.BillingAccountName
+  $billingAccountName = $global:configuration.RoleOperationScope.BillingAccountName
 
   switch ($Scope) {
     "Enrollment" {
       $endpoint = $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByBillingAccount.Replace("{billingAccountName}", $billingAccountName)
     }
     "Department" {
-      $departmentName = $global:configuration.CheckOrAssignRoles.DepartmentName
+      $departmentName = $global:configuration.RoleOperationScope.DepartmentName
       $endpoint = $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByDepartment.Replace("{billingAccountName}", $billingAccountName).Replace("{departmentName}", $departmentName)
     }
     "EnrollmentAccount" {
-      $enrollmentAccountName = $global:configuration.CheckOrAssignRoles.EnrollmentAccountName
+      $enrollmentAccountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
       $endpoint = $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByEnrollmentAccount.Replace("{billingAccountName}", $billingAccountName).Replace("{enrollmentAccountName}", $enrollmentAccountName)
     }
   }
