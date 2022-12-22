@@ -11,20 +11,15 @@
     "GetBillingAccounts": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}?api-version=2020-05-01",
     "GetBillingRoleAssignmentsByBillingAccount": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/billingRoleAssignments?api-version=2019-10-01-preview",
     "GetBillingRoleAssignmentsByDepartment": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/departments/{departmentName}/billingRoleAssignments?api-version=2019-10-01-preview",
-    "GetBillingRoleAssignmentsByEnrollmentAccount": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/enrollmentAccounts/{enrollmentAccountName}/billingRoleAssignments?api-version=2019-10-01-preview"
+    "GetBillingRoleAssignmentsByEnrollmentAccount": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/enrollmentAccounts/{enrollmentAccountName}/billingRoleAssignments?api-version=2019-10-01-preview",
+    "AssignBillingAccountLevelRoles": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/billingRoleAssignments/{billingRoleAssignmentName}?api-version=2019-10-01-preview",
+    "AssignDepartmentLevelRoles": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/departments/{departmentName}/billingRoleAssignments/{billingRoleAssignmentName}?api-version=2019-10-01-preview",
+    "AssignEnrollmentAccountLevelRoles": "https://management.azure.com/providers/Microsoft.Billing/billingAccounts/{billingAccountName}/enrollmentAccounts/{enrollmentAccountName}/billingRoleAssignments/{billingRoleAssignmentName}?api-version=2019-10-01-preview"
   },
-  "CheckRoles": {
-    "Enterprise": {
-      "BillingAccountName": ""
-    },
-    "Department": {
-      "BillingAccountName": "",
-      "DepartmentName": ""
-    },
-    "Account": {
-      "BillingAccountName": "",
-      "AccountName": ""
-    }
+  "RoleOperationScope": {
+    "BillingAccountName": "",
+    "DepartmentName": "",
+    "EnrollmentAccountName": ""
   },
   "AssignRoles": {
     "9f1983cb-2574-400c-87e9-34cf8e2280db": [
