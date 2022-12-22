@@ -63,10 +63,6 @@ function Get-EAAdminMenu {
   $menu = Create-Menu -MenuTitle "EA Admin Operations" -MenuOptions "Assign Roles - to user", "Assign Roles - to SPN", "Check Roles", "Export Roles", "Delete Roles", "Back", "Quit"
   switch ($menu) {
     0 {
-      # Write-Warning "It's strongly recommended to sign in with Enterprise Administrator Role to do the role assignments."
-      # Write-Warning "Please use the Check Roles menu if you are not sure which role your signed account is."
-      # cmd /c pause
-      # Get-ChooseUserRoleMenu
       Write-AssignRoleWarnings
       Get-AssignUserRoleMenu
     }
@@ -109,23 +105,12 @@ function Get-EACheckRolesMenu {
       $principalInput = Get-UserInput "Please input the user email or service principal (default will be the current signed in user)"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope $scope
       break
-      
-      # $token = $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
-      # $principalInput = Read-Host "Please input the user email or service principal (default will be the current signed in user)"
-      # Get-BillingRoleAssignmentsOnEnterpriseScopeForSingleSP -AccessToken $token -Principal $principalInput
-      
-      # Get-EACheckRolesMenu
     }
     1 {
       $scope = "Department"
       $principalInput = Get-UserInput "Please input the user email or service principal (default will be the current signed in user)"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope "Department"
       break
-      # $token = $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
-      # $principalInput = Read-Host "Please input the user email or service principal (default will be the current signed in user)"
-      # Get-BillingRoleAssignmentsOnDepartmentForSingleSP -AccessToken $token -Principal $principalInput
-      
-      # Get-EACheckRolesMenu
     }
 
     2 {
@@ -133,11 +118,6 @@ function Get-EACheckRolesMenu {
       $principalInput = Get-UserInput "Please input the user email or service principal (default will be the current signed in user)"
       $roleAssignmentsResponse = Get-BillingRoleAssignmentsResponse -Scope "EnrollmentAccount"
       break
-      # $token = $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
-      # $principalInput = Read-Host "Please input the user email or service principal (default will be the current signed in user)"
-      # Get-BillingRoleAssignmentsOnEnrollmentAccountForSingleSP -AccessToken $token -Principal $principalInput
-      
-      # Get-EACheckRolesMenu
     }
 
     3 {
@@ -207,14 +187,10 @@ function Get-EAExportRolesMenu {
     }
   }
 
-  # Write-Host $roleAssignmentsResponse
   $content = $roleAssignmentsResponse.Content | ConvertFrom-Json
 
   [System.Collections.ArrayList]$objList = @()
   foreach ($item in $content.value) {
-    # Write-Host "Name: $($item.name)"
-    # Write-Host "RoleDefinitionId: $($item.properties.roleDefinitionId)"
-
     # Get Role Definition Name
     $definitionId = $item.properties.roleDefinitionId.Split('/')[-1]
     $roleDefinitionName = $global:configuration.RoleMappings.$definitionId.name
@@ -459,19 +435,6 @@ function Assign-Role {
   }
 
   if (-not [string]::IsNullOrEmpty($UserEmail) -and $(Get-IsValidEmail $UserEmail)) {
-    # Assigning a role to User
-    # No need to check for User existance and use email in the payload.
-    # Write-Warning "Checking user existance in current tenant..."
-    # $checkResult = az ad user show --id $UserEmail --only-show-errors 2>NUL
-    # if ($null -eq $checkResult) {
-    #   Write-Error "$UserEmail is not found in current tenant. Try switching tenant."
-    #   return
-    # } else {
-    #  Write-Warning "User exists! Getting principal id..."
-    #  $userPrincipalId = $(az ad user show --id $UserEmail | ConvertFrom-Json).id
-      
-    # }
-
     $payload = @{
       properties=@{
         userEmailAddress=$UserEmail
@@ -670,234 +633,6 @@ function Generate-RoleAssignmentsCsv {
   return ,$DataTable
 }
 
-# function Get-BillingRoleAssignmentsOnEnterpriseScopeForSingleSP {
-#   param (
-#     [Parameter(Mandatory=$true)]
-#     [string]
-#     $AccessToken,
-#     [Parameter(Mandatory=$false)]
-#     [string]
-#     $Principal
-#   )
-#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
-#   # Get the response for all the billing account level role assignments first.
-#   try {
-#     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByBillingAccount.Replace("{billingAccountName}", $enterpriseAccountName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
-#   }
-#   catch {
-#     if ($_.Exception.Response.StatusCode -eq 403) {
-#       Write-Warning "This token you provided does not have Enrollment Administrator role, try other level like Department, Enrollment Account."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     } else {
-#       Write-Error "Something wrong happened, error: $($_.Exception.Response.ReasonPhrase)."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     }
-#   }
-#   $result = ($response.Content | ConvertFrom-Json)
-#   # Now according to the Principal that user choose, we filter out the result.
-#   if ([string]::IsNullOrEmpty($Principal)) {
-#     Write-Warning "Checking current signed user $($global:loginInfo.user.name) on the Enrollment Account level for billing account: $enterpriseAccountName)..."
-#     # New logic! Getting the data means this user is either Enterprise Admin or Enterprise Admin Reader.
-#     # Now find out which one it is.
-#     # $userObj = az ad signed-in-user show | ConvertFrom-Json
-
-#     # Still use email address to check to avoid tenant related issue.
-#     # TODO: Need to check whether one user will have multiple roles, this can return an array or something. Double test after implementing the assigning roles feature.
-#     $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $global:loginInfo.user.name}
-#     $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#     $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#     Write-Success "The current role for user $($global:loginInfo.user.name) in the Enrollment level of billing account $($enterpriseAccountName) is: $roleName";
-#   } else {
-#     # First check it's email or principal Id
-#     if (Get-IsValidEmail -Email $Principal) {
-#       Write-Warning "Checking user $Principal on the Enrollment Account level for billing account: $enterpriseAccountName)..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for user $Principal in the Enrollment level of billing account $($enterpriseAccountName) is: $roleName";
-#       } else {
-#         Write-Warning "User $Principal does not have any role assignment in the Billing Account level."
-#       }
-#     } else {
-#       $isGuid = Test-IsGuid $Principal
-#       if (-not $isGuid) {
-#         Write-Error "Seems the input is not a valid Guid, please try again."
-#         cmd /c pause
-#         return
-#       }
-#       # Handle principal id
-#       Write-Warning "Checking service principal with id $Principal on the Enrollment Account Level for billing account: $enterpriseAccountName..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.principalId -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for service principal $Principal in the Enrollment level of billing account $($enterpriseAccountName) is: $roleName";
-#       } else {
-#         Write-Warning "Service Principal $Principal does not have any role assignment in the Billing Account level."
-#       }
-#     }
-#   }
-
-#   Write-Success "Operation Completed!"
-#   cmd /c pause
-# }
-
-# function Get-BillingRoleAssignmentsOnDepartmentForSingleSP {
-#   param (
-#     [Parameter(Mandatory=$true)]
-#     [string]
-#     $AccessToken,
-#     [Parameter(Mandatory=$false)]
-#     [string]
-#     $Principal
-#   )
-#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
-#   $departmentName = $global:configuration.RoleOperationScope.DepartmentName
-#   # Get the response for all the billing account level role assignments first.
-#   try {
-#     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByDepartment.Replace("{billingAccountName}", $enterpriseAccountName).Replace("{departmentName}", $departmentName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
-#   }
-#   catch {
-#     if ($_.Exception.Response.StatusCode -eq 403) {
-#       Write-Warning "This token you provided does not have Enterprise Administrator nor Department Admin role, try other level like Enrollment Account."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     } else {
-#       Write-Error "Something wrong happened, error: $($_.Exception.Response.ReasonPhrase)."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     }
-#   }
-#   $result = ($response.Content | ConvertFrom-Json)
-#   # Now according to the Principal that user choose, we filter out the result.
-#   if ([string]::IsNullOrEmpty($Principal)) {
-#     Write-Warning "Checking current signed user $($global:loginInfo.user.name) on the Department level for department: $departmentName in billing account: $enterpriseAccountName..."
-#     # New logic! Getting the data means this user is either Enterprise Admin or Enterprise Admin Reader.
-#     # Now find out which one it is.
-#     # $userObj = az ad signed-in-user show | ConvertFrom-Json
-
-#     # Still use email address to check to avoid tenant related issue.
-#     # TODO: Need to check whether one user will have multiple roles, this can return an array or something. Double test after implementing the assigning roles feature.
-#     $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $global:loginInfo.user.name}
-#     $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#     $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#     Write-Success "The current role for user $($global:loginInfo.user.name) in the Department level of department $departmentName is: $roleName";
-#     # Write-Info "$($roleAssginment.roleDefinitionId.Split('/')[-1])"
-    
-#   } else {
-#     # First check it's email or principal Id
-#     if (Get-IsValidEmail -Email $Principal) {
-#       Write-Warning "Checking user $Principal on the Department level for department: $departmentName in billing account: $enterpriseAccountName..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for user $Principal in the Department level of department $departmentName is: $roleName";
-#       } else {
-#         Write-Warning "User $Principal does not have any role assignment in the Department level."
-#       }
-#     } else {
-#       # Handle principal id
-#       Write-Warning "Checking service principal with id $Principal on the Department level for department: $departmentName in billing account: $enterpriseAccountName..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.principalId -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for service principal $Principal in the Department level of department $departmentName is: $roleName";
-#       } else {
-#         Write-Warning "Service Principal $Principal does not have any role assignment in the Department level."
-#       }
-#     }
-#   }
-
-#   Write-Success "Operation Completed!"
-#   cmd /c pause
-# }
-
-# function Get-BillingRoleAssignmentsOnEnrollmentAccountForSingleSP {
-#   param (
-#     [Parameter(Mandatory=$true)]
-#     [string]
-#     $AccessToken,
-#     [Parameter(Mandatory=$false)]
-#     [string]
-#     $Principal
-#   )
-#   $enterpriseAccountName = $global:configuration.RoleOperationScope.BillingAccountName
-#   $accountName = $global:configuration.RoleOperationScope.EnrollmentAccountName
-#   # Get the response for all the billing account level role assignments first.
-#   try {
-#     $response = Invoke-WebRequest -Uri $global:configuration.BillingAPIUrls.GetBillingRoleAssignmentsByEnrollmentAccount.Replace("{billingAccountName}", $enterpriseAccountName).Replace("{enrollmentAccountName}", $accountName) -Method Get -Headers @{Authorization="Bearer $AccessToken"}
-#   }
-#   catch {
-#     if ($_.Exception.Response.StatusCode -eq 403) {
-#       Write-Warning "This token you provided does not have permission to get the role assignments on Enrollment Account level, please do proper role assignment first."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     } else {
-#       Write-Error "Something wrong happened, error: $($_.Exception.Response.ReasonPhrase)."
-#       Read-Host "Press any key to go back"
-#       Get-UserFunctionMenu
-#       return
-#     }
-#   }
-#   $result = ($response.Content | ConvertFrom-Json)
-#   # Now according to the Principal that user choose, we filter out the result.
-#   if ([string]::IsNullOrEmpty($Principal)) {
-#     Write-Warning "Checking current signed user $($global:loginInfo.user.name) on the Account $accountName in billing account: $enterpriseAccountName..."
-#     # New logic! Getting the data means this user is either Enterprise Admin or Enterprise Admin Reader.
-#     # Now find out which one it is.
-#     # $userObj = az ad signed-in-user show | ConvertFrom-Json
-
-#     # Still use email address to check to avoid tenant related issue.
-#     # TODO: Need to check whether one user will have multiple roles, this can return an array or something. Double test after implementing the assigning roles feature.
-#     $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $global:loginInfo.user.name}
-#     if ($null -ne $roleAssginment) {
-#       $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#       $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#       Write-Success "The current role for user $($global:loginInfo.user.name) in the Account level of account $accountName is: $roleName";
-#     } else {
-#       Write-Warning "User $($global:loginInfo.user.name) does not have any role assignment in the Account level."
-#     }
-#   } else {
-#     # First check it's email or principal Id
-#     if (Get-IsValidEmail -Email $Principal) {
-#       Write-Warning "Checking user $Principal on the Department level for account: $accountName in billing account: $enterpriseAccountName..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.userEmailAddress -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for user $Principal in the Account level of account $accountName is: $roleName";
-#       } else {
-#         Write-Warning "User $Principal does not have any role assignment in the Account level."
-#       }
-#     } else {
-#       # Handle principal id
-#       Write-Warning "Checking service principal with id $Principal on the Account level for account $accountName in billing account: $enterpriseAccountName..."
-#       $roleAssginment = $result.value.properties | Where-Object {$_.principalId -eq $Principal}
-#       if ($null -ne $roleAssginment) {
-#         $roleDefinitionId = $roleAssginment.roleDefinitionId.Split('/')[-1]
-#         $roleName = $global:configuration.RoleMappings.$roleDefinitionId.name
-#         Write-Success "The current role for service principal $Principal in the Account level of account $accountName is: $roleName";
-#       } else {
-#         Write-Warning "Service Principal $Principal does not have any role assignment in the Account level."
-#       }
-#     }
-#   }
-
-#   Write-Success "Operation Completed!"
-#   cmd /c pause
-# }
-
-
 function Get-BillingRoleAssignmentsResponse {
   param(
     [Parameter(Mandatory=$true)]
@@ -935,14 +670,11 @@ function Get-BillingRoleAssignmentsResponse {
       return
     } else {
       Write-Error "Something wrong happened, error: $($_.Exception.Response.ReasonPhrase)."
-      # Read-Host "Press any key to go back"
       cmd /c pause
-      # Get-UserFunctionMenu
       return
     }
   }
 
-  # return $response.Content | ConvertFrom-Json
   return $response
 }
 
