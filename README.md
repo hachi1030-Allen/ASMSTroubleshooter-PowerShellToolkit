@@ -179,3 +179,55 @@ After selecting the level, it will ask for the `user email` / `SPN ID` to check 
 ![CheckRoles](Images/check-roles-result.jpg)
 
 #### Export Roles
+
+Export roles is a functionality you can use to export all the role assignments for some specific level: like `Enterprise/Enrollment` level, `Department` level, or `Enrollment Account` level.
+
+To have the widest range of the priviledge, I would suggest login as the `Enrollment Administrator` user and then use this feature.
+
+After selecting this menu, you will be asked to choose a level for the exporting, as below screenshot:
+
+![ExportRolesMenu](Images/export-roles-menu.jpg)
+
+After selecting the level, you will see a `csv` file genereated under the scripts folder.
+
+You can check on the file and there will be `Assigned To` column indicating who has been assigned and `Role Definition Name` is the role that has been assigned to the user / SPN. There is also a column called `Assigned Type` which indicates whether it's a user or SPN.
+
+#### Delete Roles
+
+Deleting roles work similarly as assign roles. However, since per level you will only have one role by default.
+
+For example, if the user has been assigned the `Enrollment Administrator` role, you will not be able to assign `Enrollment Reader` or `EA Purchaser` role to that user anymore since it's a conflict.
+
+Therefore, when deleting a role, you won't be asked about which role to be deleted but which level the role is on that you need to delete.
+
+Detailed steps:
+
+1. Select which level you want the role to be deleted.
+
+   ![Delete Role Menu](Images/delete-role-menu.jpg)
+
+2. You will be asked to input the user email or SPN object id that.
+
+   ![Delete Role input SP](Images/delete-role-input-sp.jpg)
+
+3. The app will check the current role on that level and if there is any role on that level, you will be asked to confirm whether you want to delete the role for sure.
+
+   Note: Your signed in user must be in the same tenant as the `SPN` when you try to delete a role for the SPN.
+
+   ![Delete Role Confirmation](Images/delete-role-confirmation.jpg)
+
+4. Once you choose Yes/Y, the role will be deleted and you should see a message indicating the successful deletion of the role.
+
+# How to make feature requests
+
+I haven't set up all the things like a project / issue templates for this tool.
+
+Therefore, if you would like some feature requests that you feel it's very useful to others, please create an issue and mark the title with things like **_[Feature Request]_** and I will check on the requests and see if that's possible to merge into this tool.
+
+# How to create bugs
+
+Simply create an issue and indicating it's a bug.
+
+# How to contribute
+
+Pleaes follow the standard open-source flow, which is fork this repo and make a PR whenever you want to merge to this main repo.
