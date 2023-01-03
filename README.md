@@ -38,7 +38,7 @@ If you need to login as a user credential, but with specific tenant, fulfill bel
 
 ```json
 "UserLoginInfo": {
-  "Tenant_Id": "b39e77cc-dc66-47fa-8dd9-2f37854d9891"
+  "Tenant_Id": ""
 },
 ```
 
