@@ -4,29 +4,34 @@ $global:loginInfo = $null
 $global:configuration = Get-Configuration
 
 function MainMenu {
-  $LoginMenu = Create-Menu -MenuTitle "Welcome to EA Admin Tools - Login" -MenuOptions "Login with User Credential","Login with Service Principal","Quit"
+  $LoginMenu = Create-Menu -MenuTitle "Welcome to EA Admin Tools - Login" -MenuOptions "Login with User Credential","Login with current User Credential","Login with Service Principal","Quit"
   switch ($LoginMenu) {
     0 { 
-      Login-User -SkipLogin
+      Login-User
       Get-UserFunctionMenu
     }
     1 {
+      Login-User -SkipLogin
+      Get-UserFunctionMenu
+    }
+    2 {
       az login --service-principal -u $global:configuration.SPLoginInfo.Client_Id -p $global:configuration.SPLoginInfo.Client_Password --tenant $global:configuration.SPLoginInfo.Tenant_Id --allow-no-subscriptions
       $global:loginInfo = az account show | ConvertFrom-Json
       Write-Success "Successfully Logged in."
       cmd /c pause
-      Get-SPFunctionMenu
+      Get-SPNFunctionMenu
     }
-    2 { Exit }
+    3 { Exit }
   }
 }
 
 function Get-UserFunctionMenu {
-  $functionMenu = Create-Menu -MenuTitle "User Functions" -MenuOptions "Azure AD Operations", "EA Admin Operations", "Quit"
+  $functionMenu = Create-Menu -MenuTitle "User Functions" -MenuOptions "Azure AD Operations", "EA Admin Operations", "Back", "Quit"
   switch ($functionMenu) {
     0 { Get-AzureADMenu  }
     1 { Get-EAAdminMenu }
-    2 { Exit }
+    2 { MainMenu }
+    3 { Exit }
   }
 }
 
