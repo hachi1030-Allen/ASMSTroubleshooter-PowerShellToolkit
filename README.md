@@ -84,7 +84,7 @@ You can login with below methods:
 
 A sample screenshot of the login is as below:
 
-Pending screenshot.
+![Login Menu](Images/login-menu.jpg)
 
 ## User Logged in features
 
