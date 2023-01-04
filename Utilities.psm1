@@ -64,10 +64,7 @@ function Create-Menu {
           Write-Host ("╚" + "═" * $maxwidth + "╝")
       }
       # Allen - Test to write the sign in information here.
-      if ($null -ne $global:loginInfo) {
-        Write-Info "Signed-in Account: $($global:loginInfo.user.name)"
-        Write-Info "TenantId: $($global:loginInfo.tenantId)"
-      }
+      Show-UserAndConfigInfo
       # wait for an accepted key press
       do {
           $KeyInput = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown').VirtualKeyCode
@@ -214,6 +211,18 @@ function Choose-YesOrNo {
     }
   }
 
+  function Show-UserAndConfigInfo {
+    if ($null -ne $global:loginInfo) {
+        # Write-Info "Signed-in Account: $($global:loginInfo.user.name)"
+        # Write-Info "TenantId: $($global:loginInfo.tenantId)"
+        Write-Host "Signed-in Account: " -NoNewLine; Write-Host $global:loginInfo.user.name -ForegroundColor DarkGreen
+        Write-Host "TenantId: " -NoNewLine; Write-Host $global:loginInfo.tenantId -ForegroundColor DarkGreen
+    }
+
+    Write-Host "Enrollment Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.BillingAccountName -ForegroundColor DarkGreen
+    Write-Host "Department Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.DepartmentName -ForegroundColor DarkGreen
+    Write-Host "Enrollment Account Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.EnrollmentAccountName -ForegroundColor DarkGreen
+  }
 
 # function New-DataTable {
 #     param(
