@@ -36,11 +36,28 @@ function Get-UserFunctionMenu {
 }
 
 function Get-SPNFunctionMenu {
-  $menu = Create-Menu -MenuTitle "SPN Functions" -MenuOptions "Check EA Roles", "Back", "Quit"
+  $menu = Create-Menu -MenuTitle "SPN Functions" -MenuOptions "Get JWT Token", "Back", "Quit"
+
+  switch ($menu) {
+    0 { 
+      $token = Get-AccessToken
+
+      Write-Host "Bearer $token"
+      cmd /c pause
+      Get-SPNFunctionMenu
+    }
+    1 {
+      MainMenu
+    }
+    2 {
+      Exit
+    }
+    
+  }
 }
 
 function Get-AzureADMenu {
-  $aadMenu = Create-Menu -MenuTitle "Azure AD Operations" -MenuOptions "Switch Account", "Switch Tenant", "Back", "Quit"
+  $aadMenu = Create-Menu -MenuTitle "Azure AD Operations" -MenuOptions "Switch Account", "Switch Tenant", "Get JWT Token", "Back", "Quit"
   switch ($aadMenu) {
     0 {
       az login --allow-no-subscriptions
@@ -59,8 +76,15 @@ function Get-AzureADMenu {
       cmd /c pause
       Get-UserFunctionMenu
     }
-    2 { Get-UserFunctionMenu }
-    3 { Exit }
+    2 {
+      $token = Get-AccessToken
+
+      Write-Host "Bearer $token"
+      cmd /c pause
+      Get-UserFunctionMenu
+    }
+    3 { Get-UserFunctionMenu }
+    4 { Exit }
   }
 }
 
