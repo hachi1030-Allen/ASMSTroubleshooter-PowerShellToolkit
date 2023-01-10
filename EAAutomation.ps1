@@ -1,10 +1,11 @@
-Import-Module $(Join-Path $PSScriptRoot '.\Utilities.psm1') -Force
+# Import-Module $(Join-Path $PSScriptRoot '.\Utilities.psm1') -Force
+using module .\Utilities.psm1
 
 $global:loginInfo = $null
 $global:configuration = Get-Configuration
 
 function MainMenu {
-  $LoginMenu = Create-Menu -MenuTitle "Welcome to EA Admin Tools - Login" -MenuOptions "Login with User Credential","Login with current User Credential","Login with Service Principal","Quit"
+  $LoginMenu = Create-Menu -MenuTitle "Welcome to EA Admin Tools - Login" -MenuOptions "Login with User Credential","Login with current Credential","Login with Service Principal","Quit"
   switch ($LoginMenu) {
     0 { 
       Login-User
@@ -12,7 +13,11 @@ function MainMenu {
     }
     1 {
       Login-User -SkipLogin
-      Get-UserFunctionMenu
+      if ([CredentialType]::SPN -eq $(Get-CredentialType)) {
+        Get-SPNFunctionMenu
+      } else {
+        Get-UserFunctionMenu
+      }
     }
     2 {
       az login --service-principal -u $global:configuration.SPLoginInfo.Client_Id -p $global:configuration.SPLoginInfo.Client_Password --tenant $global:configuration.SPLoginInfo.Tenant_Id --allow-no-subscriptions

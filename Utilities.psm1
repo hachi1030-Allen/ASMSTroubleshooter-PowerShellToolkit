@@ -1,3 +1,9 @@
+enum CredentialType {
+    NotLoggedIn
+    User
+    SPN
+}
+
 function Create-Menu {
   Param(
       [Parameter(Mandatory=$false)][string]  $MenuTitle = $null,
@@ -110,7 +116,6 @@ function Get-AccessToken {
     return $(az account get-access-token --resource=https://management.azure.com --query accessToken --output tsv)
 }
 
-
 function Write-Warning {
     param (
         [Parameter(Mandatory=$true, Position=0)]
@@ -151,6 +156,17 @@ function Write-Error {
     Write-Host $Text -ForegroundColor Red
 }
 
+function Get-CredentialType {
+    if ($null -eq $global:loginInfo) {
+        return [CredentialType]::NotLoggedIn
+    }
+
+    if (Test-IsGuid $global:loginInfo.user.name) {
+        return [CredentialType]::SPN
+    } else {
+        return [CredentialType]::User
+    }
+}
 
 function Get-IsValidEmail {
     param(
@@ -213,8 +229,6 @@ function Choose-YesOrNo {
 
   function Show-UserAndConfigInfo {
     if ($null -ne $global:loginInfo) {
-        # Write-Info "Signed-in Account: $($global:loginInfo.user.name)"
-        # Write-Info "TenantId: $($global:loginInfo.tenantId)"
         Write-Host "Signed-in Account: " -NoNewLine; Write-Host $global:loginInfo.user.name -ForegroundColor DarkGreen
         Write-Host "TenantId: " -NoNewLine; Write-Host $global:loginInfo.tenantId -ForegroundColor DarkGreen
     }
@@ -222,6 +236,10 @@ function Choose-YesOrNo {
     Write-Host "Enrollment Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.BillingAccountName -ForegroundColor DarkGreen
     Write-Host "Department Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.DepartmentName -ForegroundColor DarkGreen
     Write-Host "Enrollment Account Name: " -NoNewline; Write-Host $global:configuration.RoleOperationScope.EnrollmentAccountName -ForegroundColor DarkGreen
+
+    # # Test with Enum
+    # $credentialType = Get-CredentialType
+    # Write-Host $credentialType
   }
 
 # function New-DataTable {
